@@ -8,82 +8,121 @@ function draw() {
 let carrinho;
 let verduras = [];
 let obstaculos = [];
+let nuvens = [];
 let pontos = 0;
-let tempo = 30; // Duração do jogo em segundos
+let tempo = 30;
 let gameOver = false;
 let jogoIniciado = false;
 
 function setup() {
   createCanvas(800, 600);
-  carrinho = new Carrinho(); // Criando o carrinho
+  carrinho = new Carrinho();
   frameRate(60);
-}
 
-function draw() {
-  background(220);
-
-  // Se o jogo não foi iniciado, exibe a tela inicial
-  if (!jogoIniciado) {
-    showIntroScreen(); // Tela de introdução
-  } else {
-    // Exibição do jogo
-    if (!gameOver) {
-      jogo();
-    } else {
-      // Se o jogo acabou, substituímos a tela de game over pela tela inicial novamente
-      showIntroScreen(); // Tela inicial após a perda
-    }
-
-    // Atualiza e desenha o carrinho
-    carrinho.update();
-    carrinho.show();
-
-    // Adicionar verduras e obstáculos apenas se o jogo não estiver no game over
-    if (!gameOver) {
-      if (frameCount % 60 === 0 && tempo > 0) {
-        verduras.push(new Verdura());
-        obstaculos.push(new Obstaculo());
-      }
-    }
-
-    // Atualiza e desenha as verduras
-    for (let i = verduras.length - 1; i >= 0; i--) {
-      verduras[i].update();
-      verduras[i].show();
-    
-      // Verificar se o carrinho pegou a verdura
-      if (verduras[i].isCaught(carrinho)) {
-        pontos += 10;
-        verduras.splice(i, 1); // Remove a verdura da lista
-      }
-    }
-
-    // Atualiza e desenha os obstáculos
-    for (let i = obstaculos.length - 1; i >= 0; i--) {
-      obstaculos[i].update();
-      obstaculos[i].show();
-
-      // Verifica se o carrinho bateu no obstáculo
-      if (obstaculos[i].isHit(carrinho)) {
-        gameOver = true;
-      }
-    }
-
-    // Exibe o tempo e pontos
-    fill(0);
-    textSize(20);
-    text(`Pontos: ${pontos}`, 100, 30);
-    text(`Tempo: ${tempo}s`, width - 100, 30);
+  // Cria nuvens iniciais
+  for (let i = 0; i < 5; i++) {
+    nuvens.push(new Nuvem(random(width), random(50, 150)));
   }
 }
 
-// Tela inicial (explicação do jogo)
+function draw() {
+  if (!jogoIniciado) {
+    showIntroScreen();
+  } else {
+    drawSky();
+    drawField();
+
+    if (!gameOver) {
+      jogo();
+
+      if (frameCount % 60 === 0 && tempo > 0) {
+        tempo--;
+        if (tempo === 0) {
+          gameOver = true;
+        }
+      }
+
+      carrinho.update();
+      carrinho.show();
+
+      if (frameCount % 60 === 0) {
+        verduras.push(new Verdura());
+
+        // Aumenta o número de pragas com base nos pontos
+        let pragasPorFrame = 1 + floor(pontos / 20);
+        for (let i = 0; i < pragasPorFrame; i++) {
+          obstaculos.push(new Obstaculo());
+        }
+      }
+
+      for (let i = verduras.length - 1; i >= 0; i--) {
+        verduras[i].update();
+        verduras[i].show();
+
+        if (verduras[i].isCaught(carrinho)) {
+          pontos += 10;
+          verduras.splice(i, 1);
+        } else if (verduras[i].y > height) {
+          verduras.splice(i, 1);
+        }
+      }
+
+      for (let i = obstaculos.length - 1; i >= 0; i--) {
+        obstaculos[i].update();
+        obstaculos[i].show();
+
+        if (obstaculos[i].isHit(carrinho)) {
+          gameOver = true;
+        } else if (obstaculos[i].y > height) {
+          obstaculos.splice(i, 1);
+        }
+      }
+
+      fill(0);
+      textSize(20);
+      textAlign(LEFT, TOP);
+      text(`Pontos: ${pontos}`, 10, 10);
+      textAlign(RIGHT, TOP);
+      text(`Tempo: ${tempo}s`, width - 10, 10);
+
+    } else {
+      showIntroScreen();
+    }
+  }
+}
+
+function drawSky() {
+  background(135, 206, 235); // Céu azul
+
+  // Sol
+  noStroke();
+  fill(255, 223, 0);
+  ellipse(width - 80, 80, 100, 100);
+
+  // Nuvens
+  for (let nuvem of nuvens) {
+    nuvem.update();
+    nuvem.show();
+  }
+}
+
+function drawField() {
+  fill(4, 139, 34);
+  noStroke();
+  rect(0, height / 2, width, height / 2);
+
+  for (let i = 0; i < width; i += 40) {
+    fill(0, 100, 0);
+    rect(i, height / 2, 20, height / 2);
+  }
+}
+
 function showIntroScreen() {
-  fill(0);
+  background(144, 238, 144);
+  fill("green");
   textSize(24);
   textAlign(CENTER, CENTER);
-  
-  // Se o jogo está em andamento, exibe a tela de explicação novamente após a perda
+
   if (gameOver) {
     text("Você Perdeu!", width / 2, height / 3);
     textSize(24);
@@ -92,64 +131,35 @@ function showIntroScreen() {
     text("Pressione 'Enter' para reiniciar", width / 2, height / 2 + 40);
   } else {
     text("Bem-vindo ao jogo 'Conexão Campo e Cidade'", width / 2, height / 3);
-    textSize(18);
-    text("Você sabia que as verduras são importantes para nosso corpo? E sabia que elas vem do campo? Controle o carrinho com as setas para pegar verduras!", width / 2, height / 2);
-    text("Evite os obstáculos e colete o máximo de verduras que puder!", width / 2, height / 2 + 30);
-    text("Pressione 'Enter' para começar", width / 2, height / 2 + 60);
+    textSize(12);
+    text("As verduras são importantes para o nosso corpo. Sabia que elas vêm do campo?", width / 2, height / 2);
+    text("Controle o agricultor com as setas para pegar verduras!", width / 2, height / 2 + 20);
+    text("Evite os obstáculos que são as pragas, elas podem estragar o alimento,e colete o máximo de verduras que puder!", width / 2, height / 2 + 40);
+    text("Pressione 'Enter' para começar", width / 2, height / 2 + 70);
   }
 }
 
-// Função para começar o jogo ao pressionar Enter
 function keyPressed() {
-  if (keyCode === ENTER && !jogoIniciado && !gameOver) {
-    // Começa o jogo ao pressionar Enter
+  if (keyCode === ENTER) {
+    pontos = 0;
+    tempo = 30;
+    verduras = [];
+    obstaculos = [];
+    gameOver = false;
     jogoIniciado = true;
-    tempo = 30;
-    pontos = 0;
-    gameOver = false;
-    verduras = [];
-    obstaculos = [];
-  }
-
-  // Reiniciar o jogo após o game over, voltando para a tela inicial
-  if (keyCode === ENTER && gameOver) {
-    // Reseta o jogo e volta para a tela inicial
-    jogoIniciado = false;
-    gameOver = false;
-    pontos = 0;
-    tempo = 30;
-    verduras = [];
-    obstaculos = [];
   }
 }
 
-// Jogo principal
 function jogo() {
-  // Tela principal do jogo
-  fill(0);
-  textSize(20);
-  textAlign(LEFT, TOP);
-  text(`Pontos: ${pontos}`, 10, 10);
-  text(`Tempo: ${tempo}s`, width - 100, 10);
+  // Lógica já está no draw()
 }
 
-// Tela de game over (substituída pela tela inicial)
-function showGameOver() {
-  // Não exibe mais a tela de game over separada, já que voltamos à tela inicial
-  fill(0);
-  textSize(32);
-  textAlign(CENTER, CENTER);
-  text("Você Perdeu!", width / 2, height / 3);
-  textSize(24);
-  text(`Você fez ${pontos} pontos!`, width / 2, height / 2);
-  text("Pressione 'Enter' para reiniciar", width / 2, height / 2 + 40);
-}
+// ==== CLASSES ====
 
-// Classe para o Carrinho
 class Carrinho {
   constructor() {
     this.x = width / 2;
-    this.y = height - 50;
+    this.y = height - 60;
     this.size = 50;
     this.speed = 5;
   }
@@ -164,57 +174,85 @@ class Carrinho {
   }
 
   show() {
-    fill(255, 0, 0);
-    rect(this.x, this.y, this.size, 30); // Carrinho simples
+    textSize(40);
+    textAlign(CENTER, CENTER);
+    text("👨🏿‍🌾", this.x + this.size / 2, this.y + 15);
   }
 }
 
-// Classe para as Verduras
 class Verdura {
   constructor() {
     this.x = random(50, width - 50);
     this.y = -30;
     this.size = 30;
-    this.speed = 3;
+    this.baseSpeed = 3;
+    this.emojis = ["🥦", "🥕", "🥒", "🥔"];
+    this.emoji = random(this.emojis);
   }
 
   update() {
-    this.y += this.speed; // As verduras descem pela tela
+    let velocidade = this.baseSpeed + (pontos / 10) * 0.5;
+    this.y += velocidade;
   }
 
   show() {
-    fill(0, 255, 0);
-    ellipse(this.x, this.y, this.size, this.size); // Verdura simples
+    textSize(30);
+    textAlign(CENTER, CENTER);
+    text(this.emoji, this.x, this.y);
   }
 
-  // Verifica se o carrinho pegou a verdura
   isCaught(carrinho) {
     let d = dist(this.x, this.y, carrinho.x + carrinho.size / 2, carrinho.y + carrinho.size / 2);
-    return d < this.size / 2 + carrinho.size / 2;
+    return d < this.size;
   }
 }
 
-// Classe para Obstáculos
 class Obstaculo {
   constructor() {
     this.x = random(50, width - 50);
     this.y = -30;
     this.size = 40;
-    this.speed = 4;
+    this.baseSpeed = 4;
   }
 
   update() {
-    this.y += this.speed;
+    let velocidade = this.baseSpeed + (pontos / 10) * 0.5;
+    this.y += velocidade;
   }
 
   show() {
-    fill(150);
-    rect(this.x, this.y, this.size, this.size); // Obstáculo simples
+    textSize(30);
+    textAlign(CENTER, CENTER);
+    text("🐛", this.x, this.y);
   }
 
-  // Verifica se o carrinho bateu no obstáculo
   isHit(carrinho) {
     let d = dist(this.x + this.size / 2, this.y + this.size / 2, carrinho.x + carrinho.size / 2, carrinho.y + carrinho.size / 2);
     return d < this.size / 2 + carrinho.size / 2;
+  }
+}
+
+class Nuvem {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.size = random(60, 100);
+    this.speed = random(0.2, 0.5);
+  }
+
+  update() {
+    this.x += this.speed;
+    if (this.x > width + this.size) {
+      this.x = -this.size;
+      this.y = random(50, 150);
+    }
+  }
+
+  show() {
+    fill(255);
+    noStroke();
+    ellipse(this.x, this.y, this.size, this.size * 0.6);
+    ellipse(this.x + 30, this.y + 10, this.size * 0.8, this.size * 0.5);
+    ellipse(this.x - 30, this.y + 10, this.size * 0.8, this.size * 0.5);
   }
 }
