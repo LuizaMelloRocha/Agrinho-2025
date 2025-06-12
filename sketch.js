@@ -14,12 +14,14 @@ let tempo = 30;
 let gameOver = false;
 let jogoIniciado = false;
 
+let meta = 50;
+let atingiuMeta = false;
+
 function setup() {
   createCanvas(800, 600);
   carrinho = new Carrinho();
   frameRate(60);
 
-  // Cria nuvens iniciais
   for (let i = 0; i < 5; i++) {
     nuvens.push(new Nuvem(random(width), random(50, 150)));
   }
@@ -33,8 +35,6 @@ function draw() {
     drawField();
 
     if (!gameOver) {
-      jogo();
-
       if (frameCount % 60 === 0 && tempo > 0) {
         tempo--;
         if (tempo === 0) {
@@ -48,7 +48,6 @@ function draw() {
       if (frameCount % 60 === 0) {
         verduras.push(new Verdura());
 
-        // Aumenta o número de pragas com base nos pontos
         let pragasPorFrame = 1 + floor(pontos / 20);
         for (let i = 0; i < pragasPorFrame; i++) {
           obstaculos.push(new Obstaculo());
@@ -85,6 +84,26 @@ function draw() {
       textAlign(RIGHT, TOP);
       text(`Tempo: ${tempo}s`, width - 10, 10);
 
+      // 🎯 Metas
+      textAlign(CENTER, TOP);
+      textSize(18);
+      fill(0);
+      text(`Meta: ${meta} pontos`, width / 2, 10);
+
+      if (pontos >= meta && !atingiuMeta) {
+        atingiuMeta = true;
+        meta += 50;
+      }
+
+      if (atingiuMeta) {
+        fill(0, 100, 0);
+        textSize(20);
+        text("🎯 Meta atingida!", width / 2, 40);
+        if (frameCount % 120 === 0) {
+          atingiuMeta = false;
+        }
+      }
+
     } else {
       showIntroScreen();
     }
@@ -107,7 +126,7 @@ function drawSky() {
 }
 
 function drawField() {
-  fill(4, 139, 34);
+  fill(34, 139, 34);
   noStroke();
   rect(0, height / 2, width, height / 2);
 
@@ -119,7 +138,7 @@ function drawField() {
 
 function showIntroScreen() {
   background(144, 238, 144);
-  fill("green");
+  fill(0);
   textSize(24);
   textAlign(CENTER, CENTER);
 
@@ -150,14 +169,10 @@ function keyPressed() {
     obstaculos = [];
     gameOver = false;
     jogoIniciado = true;
+    meta = 50;
+    atingiuMeta = false;
   }
 }
-
-function jogo() {
-  // Lógica já está no draw()
-}
-
-// ==== CLASSES ====
 
 class Carrinho {
   constructor() {
@@ -194,7 +209,8 @@ class Verdura {
   }
 
   update() {
-    let velocidade = this.baseSpeed + (pontos / 10) * 0.5;
+    // Mais rápido conforme os pontos aumentam
+    let velocidade = this.baseSpeed + pontos * 0.05;
     this.y += velocidade;
   }
 
@@ -219,7 +235,7 @@ class Obstaculo {
   }
 
   update() {
-    let velocidade = this.baseSpeed + (pontos / 10) * 0.5;
+    let velocidade = this.baseSpeed + pontos * 0.05;
     this.y += velocidade;
   }
 
