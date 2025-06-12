@@ -124,18 +124,21 @@ function showIntroScreen() {
   textAlign(CENTER, CENTER);
 
   if (gameOver) {
-    text("Você Perdeu!", width / 2, height / 3);
+    text("Puxa, você perdeu!😕", width / 2, height / 3);
     textSize(24);
     text(`Você fez ${pontos} pontos!`, width / 2, height / 2);
     textSize(18);
-    text("Pressione 'Enter' para reiniciar", width / 2, height / 2 + 40);
+    text("Tudo bem, tente de novo, acredito em você!☺️", width / 2, height / 2 + 40);
+    text("Pressione 'Enter' para reiniciar", width / 2, height / 2 + 70);
   } else {
-    text("Bem-vindo ao jogo 'Conexão Campo e Cidade'", width / 2, height / 3);
+    text("🌞🌿🌻Bem-vindo ao jogo 'Conexão Campo e Cidade'🌻🌿🌞", width / 2, height / 3);
     textSize(12);
-    text("As verduras são importantes para o nosso corpo. Sabia que elas vêm do campo?", width / 2, height / 2);
+    text("As verduras são importantes para o nosso corpo. Sabia que antes de elas chegarem na sua mesa são trazidas do campo?", width / 2, height / 2);
     text("Controle o agricultor com as setas para pegar verduras!", width / 2, height / 2 + 20);
     text("Evite os obstáculos que são as pragas, elas podem estragar o alimento,e colete o máximo de verduras que puder!", width / 2, height / 2 + 40);
     text("Pressione 'Enter' para começar", width / 2, height / 2 + 70);
+    text("ATENÇÃO! A CADA PONTO QUE O JOGADOR COLETAR, AS PRAGAS AUMENTAM E FICAM 0.5X MAIS RÁPIDAS", width / 2, height / 2 + 90);
+    text("BOA SORTE! 🌷", width / 2, height / 2 + 110);
   }
 }
 
