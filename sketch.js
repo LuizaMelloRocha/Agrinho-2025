@@ -9,13 +9,15 @@ let carrinho;
 let verduras = [];
 let obstaculos = [];
 let nuvens = [];
-let pontos = 0;
+let pont
+os = 0;
 let tempo = 30;
 let gameOver = false;
 let jogoIniciado = false;
 
 let meta = 50;
 let atingiuMeta = false;
+let metaAtingidaFrame = 0;
 
 function setup() {
   createCanvas(800, 600);
@@ -84,25 +86,28 @@ function draw() {
       textAlign(RIGHT, TOP);
       text(`Tempo: ${tempo}s`, width - 10, 10);
 
-      // 🎯 Metas
+      // Mostrar meta atual
       textAlign(CENTER, TOP);
       textSize(18);
       fill(0);
       text(`Meta: ${meta} pontos`, width / 2, 10);
 
+      // Verifica se meta foi atingida
       if (pontos >= meta && !atingiuMeta) {
         atingiuMeta = true;
         meta += 50;
+        metaAtingidaFrame = frameCount;
       }
 
-      if (atingiuMeta) {
-        fill(0, 100, 0);
-        textSize(20);
-        text("🎯 Meta atingida!", width / 2, 40);
-        if (frameCount % 120 === 0) {
-          atingiuMeta = false;
-        }
-      }
+      // Exibe mensagem grande temporária
+      if (atingiuMeta && frameCount - metaAtingidaFrame < 120) {
+  fill(0, 0, 139); // azul forte (dark blue)
+  textSize(40);
+  textAlign(CENTER, CENTER);
+  text("🎯 Meta atingida!\nPróxima fase!", width / 2, height / 2);
+} else if (atingiuMeta && frameCount - metaAtingidaFrame >= 120) {
+  atingiuMeta = false;
+}
 
     } else {
       showIntroScreen();
@@ -143,7 +148,7 @@ function showIntroScreen() {
   textAlign(CENTER, CENTER);
 
   if (gameOver) {
-    text("Puxa, você perdeu!😕", width / 2, height / 3);
+     text("Puxa, você perdeu!😕", width / 2, height / 3);
     textSize(24);
     text(`Você fez ${pontos} pontos!`, width / 2, height / 2);
     textSize(18);
@@ -152,11 +157,11 @@ function showIntroScreen() {
   } else {
     text("🌞🌿🌻Bem-vindo ao jogo 'Conexão Campo e Cidade'🌻🌿🌞", width / 2, height / 3);
     textSize(12);
-    text("As verduras são importantes para o nosso corpo. Sabia que antes de elas chegarem na sua mesa são trazidas do campo?", width / 2, height / 2);
-    text("Controle o agricultor com as setas para pegar verduras!", width / 2, height / 2 + 20);
-    text("Evite os obstáculos que são as pragas, elas podem estragar o alimento,e colete o máximo de verduras que puder!", width / 2, height / 2 + 40);
+    text("Os vegetais e verduras são importantes para o nosso corpo. Sabia que antes de eles chegarem na sua mesa são trazidos do campo?", width / 2, height / 2);
+    text("Controle o agricultor com as setas para pegar os vegetais/verduras!", width / 2, height / 2 + 20);
+    text("Desvie os obstáculos que são as pragas, elas podem estragar o alimento,e colete o máximo de pontos que puder!", width / 2, height / 2 + 40);
     text("Pressione 'Enter' para começar", width / 2, height / 2 + 70);
-    text("ATENÇÃO! A CADA PONTO QUE O JOGADOR COLETAR, AS PRAGAS AUMENTAM E FICAM 0.5X MAIS RÁPIDAS", width / 2, height / 2 + 90);
+    text("ATENÇÃO! A CADA PONTO QUE O JOGADOR COLETAR, AS PRAGAS E ALIMENTOS AUMENTAM E FICAM 0.5X MAIS RÁPIDAS", width / 2, height / 2 + 90);
     text("BOA SORTE! 🌷", width / 2, height / 2 + 110);
   }
 }
@@ -173,6 +178,8 @@ function keyPressed() {
     atingiuMeta = false;
   }
 }
+
+// ==== CLASSES ====
 
 class Carrinho {
   constructor() {
@@ -209,7 +216,6 @@ class Verdura {
   }
 
   update() {
-    // Mais rápido conforme os pontos aumentam
     let velocidade = this.baseSpeed + pontos * 0.05;
     this.y += velocidade;
   }
